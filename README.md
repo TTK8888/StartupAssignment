@@ -21,6 +21,8 @@ Written under `--output-dir` (default `generated_outputs/funding_verification`):
 
 ## Usage
 
+# Args are completely optional
+
 ```
 python build_verified_funding_dataset.py \
   --feed https://example.com/rss \
