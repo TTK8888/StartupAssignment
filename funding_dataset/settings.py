@@ -11,6 +11,7 @@ for a single-script tool).
 from __future__ import annotations
 
 import re
+import sys
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
@@ -19,6 +20,9 @@ import yaml
 
 
 CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
+DEFAULT_SOURCE_PROFILE = "default"
+SOURCE_PROFILE_ARG = "--source-profile"
+SOURCE_PROFILE_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
 def _flatten_pattern(raw: str) -> str:
@@ -32,8 +36,34 @@ def _flatten_pattern(raw: str) -> str:
 
 
 def _load_yaml(name: str) -> dict:
-    with (CONFIG_DIR / name).open("r", encoding="utf-8") as fh:
+    path = CONFIG_DIR / name
+    try:
+        fh = path.open("r", encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Config file not found: {path}") from exc
+    with fh:
         return yaml.safe_load(fh)
+
+
+def source_profile_from_argv(argv: list[str] | None = None) -> str:
+    args = sys.argv if argv is None else argv
+    for index, value in enumerate(args):
+        if value == SOURCE_PROFILE_ARG and index + 1 < len(args):
+            return args[index + 1]
+        if value.startswith(f"{SOURCE_PROFILE_ARG}="):
+            return value.split("=", 1)[1]
+    return DEFAULT_SOURCE_PROFILE
+
+
+def sources_config_name(profile: str) -> str:
+    clean_profile = profile.strip() if profile else DEFAULT_SOURCE_PROFILE
+    if clean_profile == DEFAULT_SOURCE_PROFILE:
+        return "sources.yaml"
+    if not SOURCE_PROFILE_PATTERN.fullmatch(clean_profile):
+        raise ValueError(
+            "Source profile names may only contain letters, numbers, underscores, and hyphens."
+        )
+    return f"sources.{clean_profile}.yaml"
 
 
 @dataclass(frozen=True)
@@ -88,8 +118,9 @@ NON_USD_TO_USD_RATE: dict[str, Decimal] = {
     code: Decimal(rate) for code, rate in _currency["non_usd_to_usd_rate"].items()
 }
 
-# ---- sources.yaml ----
-_sources = _load_yaml("sources.yaml")
+# ---- sources*.yaml ----
+SOURCE_PROFILE = source_profile_from_argv()
+_sources = _load_yaml(sources_config_name(SOURCE_PROFILE))
 DISALLOWED_SOURCE_TYPE: str = _sources["disallowed_source_type"]
 ALLOWED_TRUSTED_MEDIA_DOMAINS: set[str] = set(_sources["allowed_trusted_media_domains"])
 ALLOWED_STARTUP_DATABASE_DOMAINS: set[str] = set(_sources["allowed_startup_database_domains"])
