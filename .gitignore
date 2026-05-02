@@ -1,0 +1,13 @@
+/__pycache__
+
+/funding_dataset/__pycache__
+
+/funding_dataset/csv_io/__pycache__
+
+/funding_dataset/scraper/__pycache__
+
+draft-a-plan-to-sleepy-pearl.md
+
+/generated_outputs
+
+/tests
