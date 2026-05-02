@@ -1,0 +1,102 @@
+# Regex patterns. Stored as raw strings — settings.py compiles them with re.IGNORECASE.
+# Keys ending in _pattern are compiled to re.Pattern objects.
+
+# drops auth pages, boilerplate author pages, and binary assets before fetching
+skip_url_pattern: |-
+  (
+  /login|/signin|/sign-in|/signup|/register|/account|/profile|/user|
+  /author/|/authors/|/advertis|
+  /privacy|/terms|/contact|/about|/subscribe|/newsletter|/events|
+  /portfolio/[a-z0-9-]+/?$|/portfolio/$|/companies/[a-z0-9-]+/?$|
+  /partner-insights/|/perspectives/|/op-?eds?/|/opinion/|
+  \.(?:jpg|jpeg|png|gif|webp|svg|pdf|zip|mp4|mp3|css|js)$
+  )
+
+funding_pattern: |-
+  \b(
+  raise|raises|raised|raising|funding|funded|investment|invests|invested|
+  financing|venture capital|pre-seed|seed|series\s+[a-z]|pre-series|
+  lead investor|led by|backed by
+  )\b
+
+deal_action_pattern: |-
+  \b(
+  raise|raises|raised|raising|
+  secure|secures|secured|
+  close|closes|closed|
+  bag|bags|bagged|
+  land|lands|landed|
+  invests|invested|backs|backed|led by|co-led by
+  )\b
+
+round_or_amount_pattern: |-
+  \b(
+  pre[-\s]?seed|seed|pre[-\s]?series\s+[a-z]|series\s+[a-z]|
+  bridge round|strategic investment|debt financing|funding round
+  )\b|
+  (?<!\w)(?:US\$|USD|BDT|Tk|SGD|S\$|MYR|RM|PHP|IDR|THB|VND|\$)\s?\d+(?:[.,]\d+)?
+
+# matches titles that read like one funding announcement
+deal_title_pattern: |-
+  \b(raises?|raised|secures?|secured|lands?|bags?|nets?|nabs?|
+  closes?|closed|wraps?|grabs?|hauls?|attracts?|pockets?|scores?|
+  banks?|backs?|invests?\s+(?:in|\$)|leads?\s+\$|gets?\s+\$)\b
+
+# rejects roundup titles even when a dollar amount appears
+roundup_title_pattern: |-
+  \b(ecosystem|raised so far|year in review|outlook|industry report|
+  market report|state of|decline|drop|plunge|year[-\s]end|decade|
+  top \d+|wraps? up|annual)\b
+
+negative_topic_pattern: |-
+  \b(
+  organisation news|town hall|bank asia|unionpay|debit card|credit card|
+  launch(?:es|ed)?|unveil(?:s|ed)?|introduc(?:e|es|ed)|
+  policy|regulation|guideline|report|review|opinion|how to|
+  earnings|profit|revenue|inflation|market outlook|
+  electric vehicle concept|hypercar|playstation|chatbot|gemini|
+  appointment|appointed|chief executive|ceo interview|webinar|summit
+  )\b
+
+amount_pattern: |-
+  (?<!\w)(?:
+  (?:US\$|USD|BDT|Tk|SGD|S\$|MYR|RM|PHP|IDR|THB|VND|\$)\s?
+  \d+(?:[.,]\d+)?\s?(?:million|billion|crore|lakh|mn|m|b)?
+  |
+  \d+(?:[.,]\d+)?\s?(?:million|billion|crore|lakh|mn|m|b)\s?
+  (?:US dollars|dollars|USD|BDT|taka|baht|dong|rupiah|pesos|ringgit)
+  )(?!\w)
+
+# rejects headlines or urls that name countries outside bangladesh and sea
+non_target_country_pattern: |-
+  \b(?:
+  australia|australian|
+  united states|u\.?s\.?a?|america|american|silicon valley|
+  united kingdom|u\.?k\.?|britain|british|england|london|
+  china|chinese|beijing|shanghai|shenzhen|hong kong|
+  japan|japanese|tokyo|
+  korea|korean|seoul|
+  taiwan|taipei|
+  europe|european|germany|german|berlin|france|french|paris|
+  canada|canadian|toronto|
+  israel|israeli|tel aviv|
+  uae|dubai|saudi|riyadh|qatar|doha|
+  africa|nigeria|kenya|egypt|south africa|
+  brazil|brazilian|mexico|argentina|colombia|chile|
+  anthropic|openai|mistral|deepmind|nvidia|
+  stripe|databricks|snowflake|palantir|
+  spacex|neuralink|rivian|waymo
+  )\b
+
+# Round labels: ordered list of (regex, label) pairs. First match wins.
+round_patterns:
+  - { pattern: '\bpre[-\s]?seed\b', label: "Pre-Seed" }
+  - { pattern: '\bseed\b', label: "Seed" }
+  - { pattern: '\bpre[-\s]?series\s+a\b', label: "Seed/Bridge" }
+  - { pattern: '\bseries\s+a\b', label: "Series A" }
+  - { pattern: '\bseries\s+b\b', label: "Series B" }
+  - { pattern: '\bseries\s+c\b', label: "Series C" }
+  - { pattern: '\bseries\s+d\b', label: "Series D" }
+  - { pattern: '\bstrategic investment\b', label: "Strategic Investment" }
+  - { pattern: '\bdebt financing\b', label: "Debt Financing" }
+  - { pattern: '\bbridge round\b', label: "Bridge Round" }

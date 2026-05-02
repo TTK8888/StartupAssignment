@@ -1,0 +1,262 @@
+disallowed_source_type: "Disallowed source"
+
+allowed_trusted_media_domains:
+  - techinasia.com
+  - dealstreetasia.com
+  - techcrunch.com
+  - tbsnews.net
+  - futurestartup.com
+  - thedailystar.net
+  - prothomalo.com
+
+allowed_startup_database_domains:
+  - crunchbase.com
+  - tracxn.com
+  - pitchbook.com
+  - cbinsights.com
+
+paywalled_headline_only_domains:
+  - dealstreetasia.com
+
+# outbound domains worth following one hop from a parent article
+followable_outbound_extra:
+  - prnewswire.com
+  - businesswire.com
+  - globenewswire.com
+
+source_type_by_domain:
+  startupbangladesh.vc: "Official startup/investor site"
+  pathao.com: "Official startup/investor site"
+  wavemaker.vc: "Official startup/investor site"
+  openspace.vc: "Official startup/investor site"
+  jungle-ventures.com: "Official startup/investor site"
+  insignia.vc: "Official startup/investor site"
+  insigniaventures.com: "Official startup/investor site"
+  vertexventures.sg: "Official startup/investor site"
+  vertexholdings.com: "Official startup/investor site"
+  goldengate.vc: "Official startup/investor site"
+  monkshill.com: "Official startup/investor site"
+  east.vc: "Official startup/investor site"
+  eastventures.com: "Official startup/investor site"
+  peakxv.com: "Official startup/investor site"
+  acv.vc: "Official startup/investor site"
+  prnewswire.com: "Company press release"
+  businesswire.com: "Company press release"
+  globenewswire.com: "Company press release"
+  techinasia.com: "Trusted media"
+  dealstreetasia.com: "Trusted media"
+  techcrunch.com: "Trusted media"
+  thedailystar.net: "Trusted media"
+  tbsnews.net: "Trusted media"
+  futurestartup.com: "Trusted media"
+  prothomalo.com: "Trusted media"
+  crunchbase.com: "Startup database"
+  tracxn.com: "Startup database"
+  pitchbook.com: "Startup database"
+  cbinsights.com: "Startup database"
+
+# lower number wins when choosing the primary source
+source_priority:
+  "Official startup/investor site": 1
+  "Company press release": 2
+  "LinkedIn announcement": 3
+  "Trusted media": 4
+  "Startup database": 5
+  "Disallowed source": 99
+
+# source tiers accepted with one URL when no second source exists
+standalone_source_types:
+  - "Official startup/investor site"
+  - "Company press release"
+
+# All configured sources to crawl. needs_browser=true for bot-challenged or JS-rendered sites.
+source_configs:
+  - name: Startup Bangladesh
+    source_type: "Official startup/investor site"
+    allowed_domains: [startupbangladesh.vc]
+    seed_urls:
+      - https://www.startupbangladesh.vc/news/
+      - https://www.startupbangladesh.vc/portfolio/
+    url_patterns: ["/news/", "/portfolio/", "/startup-bangladesh-invests"]
+
+  - name: PR Newswire venture capital
+    source_type: "Company press release"
+    allowed_domains: [prnewswire.com]
+    seed_urls:
+      - https://www.prnewswire.com/rss/venture-capital-latest-news/venture-capital-latest-news-list.rss
+    url_patterns: ["/news-releases/", "/rss/"]
+
+  - name: Business Wire
+    source_type: "Company press release"
+    allowed_domains: [businesswire.com]
+    seed_urls: [https://www.businesswire.com/newsroom]
+    url_patterns: ["/news/", "/newsroom"]
+
+  - name: Tech in Asia
+    source_type: "Trusted media"
+    allowed_domains: [techinasia.com]
+    seed_urls:
+      - https://www.techinasia.com/tag/funding/feed
+      - https://www.techinasia.com/category/investments/feed
+      - https://www.techinasia.com/tag/startups/feed
+      - https://www.techinasia.com/tag/singapore
+      - https://www.techinasia.com/tag/indonesia
+      - https://www.techinasia.com/tag/vietnam
+      - https://www.techinasia.com/tag/malaysia
+      - https://www.techinasia.com/tag/philippines
+      - https://www.techinasia.com/tag/thailand
+    url_patterns: ["/news/", "/"]
+    needs_browser: true
+
+  - name: DealStreetAsia
+    source_type: "Trusted media"
+    allowed_domains: [dealstreetasia.com]
+    seed_urls: [https://www.dealstreetasia.com/section/startups]
+    url_patterns: ["/stories/", "/section/startups", "/deals/"]
+
+  - name: TechCrunch startups
+    source_type: "Trusted media"
+    allowed_domains: [techcrunch.com]
+    seed_urls: [https://techcrunch.com/category/startups/]
+    url_patterns: ["/category/startups/", "/20"]
+
+  - name: The Business Standard startups
+    source_type: "Trusted media"
+    allowed_domains: [tbsnews.net]
+    seed_urls:
+      - https://www.tbsnews.net/economy/corporates
+      - https://www.tbsnews.net/tags/startup
+    url_patterns: ["/economy/", "/bangladesh/", "/tags/startup"]
+
+  - name: Future Startup
+    source_type: "Trusted media"
+    allowed_domains: [futurestartup.com]
+    seed_urls: [https://futurestartup.com/tag/funding/]
+    url_patterns: ["/tag/funding/", "/20"]
+
+  - name: The Daily Star business and startup
+    source_type: "Trusted media"
+    allowed_domains: [thedailystar.net]
+    seed_urls:
+      - https://www.thedailystar.net/business/rss.xml
+      - https://www.thedailystar.net/tech-startup/rss.xml
+      - https://www.thedailystar.net/business
+      - https://www.thedailystar.net/tech-startup
+    url_patterns: ["/business/", "/tech-startup/", "/rss.xml"]
+
+  - name: Prothom Alo business
+    source_type: "Trusted media"
+    allowed_domains: [prothomalo.com]
+    seed_urls: [https://en.prothomalo.com/business]
+    url_patterns: ["/business/", "/technology/"]
+
+  - name: Crunchbase
+    source_type: "Startup database"
+    allowed_domains: [crunchbase.com]
+    seed_urls: [https://www.crunchbase.com/hub/southeast-asia-startups]
+    url_patterns: ["/organization/", "/hub/"]
+
+  - name: Tracxn
+    source_type: "Startup database"
+    allowed_domains: [tracxn.com]
+    seed_urls: [https://tracxn.com/explore/Startups-in-Southeast-Asia]
+    url_patterns: ["/explore/", "/d/companies/"]
+
+  - name: CB Insights
+    source_type: "Startup database"
+    allowed_domains: [cbinsights.com]
+    seed_urls: [https://www.cbinsights.com/research/startup-funding/]
+    url_patterns: ["/research/", "/company/"]
+
+  - name: PitchBook
+    source_type: "Startup database"
+    allowed_domains: [pitchbook.com]
+    seed_urls: [https://pitchbook.com/news]
+    url_patterns: ["/news/", "/profiles/"]
+
+  - name: Wavemaker Partners
+    source_type: "Official startup/investor site"
+    allowed_domains: [wavemaker.vc]
+    seed_urls:
+      - https://wavemaker.vc/feed
+      - https://wavemaker.vc/category/wavemaker-category-news-news/
+    url_patterns: ["/", "/feed"]
+
+  - name: Openspace Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [openspace.vc]
+    seed_urls: [https://openspace.vc/news/]
+    url_patterns: ["/news/", "/"]
+
+  - name: Jungle Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [jungle-ventures.com]
+    seed_urls:
+      - https://jungle-ventures.com/news/
+      - https://jungle-ventures.com/feed/
+    url_patterns: ["/news/", "/feed", "/"]
+
+  - name: Insignia Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [insignia.vc, insigniaventures.com]
+    seed_urls:
+      - https://insignia.vc/news/
+      - https://insignia.vc/feed/
+    url_patterns: ["/news/", "/feed", "/"]
+
+  - name: Vertex Ventures SEA
+    source_type: "Official startup/investor site"
+    allowed_domains: [vertexventures.sg, vertexholdings.com]
+    seed_urls:
+      - https://www.vertexventures.sg/news
+      - https://www.vertexholdings.com/news
+    url_patterns: ["/news", "/insights", "/"]
+
+  - name: Golden Gate Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [goldengate.vc]
+    seed_urls:
+      - https://goldengate.vc/news
+      - https://goldengate.vc/feed
+    url_patterns: ["/news", "/feed", "/"]
+
+  - name: Monks Hill Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [monkshill.com]
+    seed_urls:
+      - https://www.monkshill.com/news
+      - https://www.monkshill.com/insights
+    url_patterns: ["/news", "/insights", "/"]
+
+  - name: East Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [east.vc, eastventures.com]
+    seed_urls:
+      - https://east.vc/news
+      - https://east.vc/insights
+    url_patterns: ["/news", "/insights", "/"]
+
+  - name: Peak XV Partners
+    source_type: "Official startup/investor site"
+    allowed_domains: [peakxv.com]
+    seed_urls:
+      - https://www.peakxv.com/newsroom/
+      - https://www.peakxv.com/insights/
+    url_patterns: ["/newsroom", "/insights", "/"]
+
+  - name: AC Ventures
+    source_type: "Official startup/investor site"
+    allowed_domains: [acv.vc]
+    seed_urls:
+      - https://acv.vc/insights/
+      - https://acv.vc/portfolio/
+    url_patterns: ["/insights", "/portfolio", "/"]
+
+site_search_templates_by_domain:
+  techinasia.com: ["https://www.techinasia.com/search?query={query}"]
+  dealstreetasia.com: ["https://www.dealstreetasia.com/?s={query}"]
+  techcrunch.com: ["https://techcrunch.com/search/{query}"]
+  tbsnews.net: ["https://www.tbsnews.net/search/google?search={query}"]
+  futurestartup.com: ["https://futurestartup.com/?s={query}"]
+  thedailystar.net: ["https://www.thedailystar.net/search?search_api_fulltext={query}"]
+  prothomalo.com: ["https://en.prothomalo.com/search?query={query}"]

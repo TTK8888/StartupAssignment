@@ -1,0 +1,14 @@
+# country_hint_pattern is derived from country_terms in settings.py (joined with regex alternation).
+country_terms:
+  Bangladesh: [bangladesh, dhaka, ".bd"]
+  Singapore: [singapore]
+  Indonesia: [indonesia, jakarta]
+  Malaysia: [malaysia, kuala lumpur]
+  Philippines: [philippines, manila]
+  Vietnam: [vietnam, viet nam, ho chi minh, hanoi]
+  Thailand: [thailand, bangkok]
+  Myanmar: [myanmar]
+  Cambodia: [cambodia]
+  Laos: [laos]
+  Brunei: [brunei]
+  Timor-Leste: [timor-leste, timor leste]

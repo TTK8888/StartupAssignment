@@ -1,0 +1,38 @@
+# identifies the crawler in robots.txt and outbound requests
+user_agent: "Mozilla/5.0 (compatible; FundingResearchBot/1.0; +public-source-verification)"
+
+crawl_keywords:
+  - investment
+  - funding
+  - startup
+  - venture
+  - seed
+  - series
+  - raised
+  - raises
+  - invests
+  - financing
+
+trusted_media_search_terms:
+  - bangladesh startup raises seed funding
+  - singapore startup raises series a
+  - southeast asia startup secures funding
+  - startup closes funding round
+
+official_source_search_terms:
+  - startup raises series a
+  - startup secures seed funding
+  - investment announcement
+
+default_url_patterns:
+  - /news/
+  - /article/
+  - /startup
+  - /startups
+  - /business
+  - /technology
+  - /tech-startup
+  - /funding
+  - /press
+  - /portfolio
+  - /tag/funding
