@@ -107,10 +107,10 @@ python main.py \
 
 ### Run one specific URL
 
-Use `--url` when you want to verify one article, press release, or announcement URL.
+Use `--index-url` when you want to verify one article, press release, or announcement URL.
 
 ```bash
-python main.py --url https://example.com/article
+python main.py --index-url https://example.com/article
 ```
 
 You can combine it with the small profile:
@@ -118,10 +118,10 @@ You can combine it with the small profile:
 ```bash
 python main.py \
   --source-profile small \
-  --url https://example.com/article
+  --index-url https://example.com/article
 ```
 
-`--url` is additive. The configured sources still run unless you also change the source set with another flag. To keep the output easy to review for a one-off URL, pass a fresh `--output-dir`.
+`--index-url` is additive. The configured sources still run unless you also change the source set with another flag. To keep the output easy to review for a one-off URL, pass a fresh `--output-dir`.
 
 ### Add or remove sources
 
