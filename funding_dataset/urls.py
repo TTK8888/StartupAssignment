@@ -21,12 +21,14 @@ from .settings import (
 
 
 def normalize_url(url: str) -> str:
+    """Return a URL without fragment or query string."""
     parsed = urlparse(url.strip())
     clean = parsed._replace(fragment="", query="")
     return urlunparse(clean)
 
 
 def domain_for(url: str) -> str:
+    """Return a lowercased hostname without a leading www prefix."""
     host = urlparse(url).netloc.lower()
     if host.startswith("www."):
         return host[4:]
@@ -34,11 +36,13 @@ def domain_for(url: str) -> str:
 
 
 def canonical_source_url(url: str) -> str:
+    """Return the canonical source URL used for source deduplication."""
     parsed = urlparse(url)
     return urlunparse((parsed.scheme.lower() or "https", domain_for(url), parsed.path.rstrip("/"), "", "", ""))
 
 
 def source_type_for_domain(domain: str) -> str:
+    """Classify a domain into the configured source policy type."""
     if any(domain == allowed or domain.endswith(f".{allowed}") for allowed in ALLOWED_TRUSTED_MEDIA_DOMAINS):
         return "Trusted media"
     if any(domain == allowed or domain.endswith(f".{allowed}") for allowed in ALLOWED_STARTUP_DATABASE_DOMAINS):
@@ -55,10 +59,12 @@ def source_type_for_domain(domain: str) -> str:
 
 
 def classify_source(url: str) -> str:
+    """Classify a URL into the configured source policy type."""
     return source_type_for_domain(domain_for(url))
 
 
 def is_allowed_source_type(source_type: str) -> bool:
+    """Return whether a source type is allowed for evidence collection."""
     return source_type in {
         "Official startup/investor site",
         "Company press release",
@@ -69,6 +75,7 @@ def is_allowed_source_type(source_type: str) -> bool:
 
 
 def source_for_url(url: str, sources: list[SourceConfig]) -> SourceConfig | None:
+    """Find the configured source whose allowed domains contain a URL."""
     domain = domain_for(url)
     for source in sources:
         if any(domain == allowed or domain.endswith(f".{allowed}") for allowed in source.allowed_domains):
@@ -77,6 +84,7 @@ def source_for_url(url: str, sources: list[SourceConfig]) -> SourceConfig | None
 
 
 def source_search_urls(source: SourceConfig) -> list[str]:
+    """Build configured search URLs for a source when search templates apply."""
     domain = source.allowed_domains[0]
     if source.source_type == "Trusted media":
         terms = TRUSTED_MEDIA_SEARCH_TERMS
@@ -100,17 +108,20 @@ def source_search_urls(source: SourceConfig) -> list[str]:
 
 
 def is_same_allowed_domain(url: str, source: SourceConfig) -> bool:
+    """Return whether a URL belongs to one of a source's allowed domains."""
     domain = domain_for(url)
     return any(domain == allowed or domain.endswith(f".{allowed}") for allowed in source.allowed_domains)
 
 
 def is_probably_feed(url: str, html_text: str) -> bool:
+    """Return whether a URL or response body appears to be an RSS or Atom feed."""
     path = urlparse(url).path.lower()
     stripped = html_text.lstrip()[:120].lower()
     return path.endswith((".rss", ".xml")) or "/feed" in path or stripped.startswith(("<?xml", "<rss", "<feed"))
 
 
 def should_skip_url(url: str) -> str:
+    """Return a skip reason for unsupported or irrelevant URLs, or an empty string."""
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"}:
         return "Unsupported URL scheme"
@@ -120,16 +131,19 @@ def should_skip_url(url: str) -> str:
 
 
 def matched_keywords(*values: str) -> list[str]:
+    """Return crawl keywords found as whole words across the given text values."""
     blob = " ".join(values).lower()
     return [keyword for keyword in CRAWL_KEYWORDS if re.search(rf"\b{re.escape(keyword)}\b", blob)]
 
 
 def url_matches_source_pattern(url: str, source: SourceConfig) -> bool:
+    """Return whether a URL path includes any pattern configured for a source."""
     path = urlparse(url).path.lower()
     return any(pattern.lower() in path for pattern in source.url_patterns)
 
 
 def is_listing_url(url: str) -> bool:
+    """Return whether a URL looks like a listing page instead of an article."""
     path = urlparse(url).path.strip("/").lower()
     listing_paths = {
         "",
@@ -156,6 +170,7 @@ def is_listing_url(url: str) -> bool:
 
 
 def looks_like_article_url(url: str) -> bool:
+    """Return whether a URL shape is likely to point at an article page."""
     if is_listing_url(url):
         return False
     path = urlparse(url).path.strip("/")
@@ -170,6 +185,7 @@ def looks_like_article_url(url: str) -> bool:
 
 
 def link_score(url: str, text: str, source: SourceConfig) -> int:
+    """Score a link for bounded crawl priority based on URL and anchor text signals."""
     # ranks links so bounded crawling prefers funding articles over menus
     score = 0
     if url_matches_source_pattern(url, source):

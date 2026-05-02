@@ -1,48 +1,8 @@
-disallowed_source_type: "Disallowed source"
+base_config: sources.yaml
 
-allowed_trusted_media_domains:
+# to add websites to crawl, add them here
+include_domains:
   - techinasia.com
   - dealstreetasia.com
 
-allowed_startup_database_domains: []
-
-paywalled_headline_only_domains:
-  - dealstreetasia.com
-
 followable_outbound_extra: []
-
-source_type_by_domain:
-  techinasia.com: "Trusted media"
-  dealstreetasia.com: "Trusted media"
-
-source_priority:
-  "Official startup/investor site": 1
-  "Company press release": 2
-  "LinkedIn announcement": 3
-  "Trusted media": 4
-  "Startup database": 5
-  "Disallowed source": 99
-
-standalone_source_types:
-  - "Official startup/investor site"
-  - "Company press release"
-
-source_configs:
-  - name: Tech in Asia
-    source_type: "Trusted media"
-    allowed_domains: [techinasia.com]
-    seed_urls:
-      - https://www.techinasia.com/tag/funding/feed
-      - https://www.techinasia.com/category/investments/feed
-    url_patterns: ["/news/", "/"]
-    needs_browser: true
-
-  - name: DealStreetAsia
-    source_type: "Trusted media"
-    allowed_domains: [dealstreetasia.com]
-    seed_urls: [https://www.dealstreetasia.com/section/startups]
-    url_patterns: ["/stories/", "/section/startups", "/deals/"]
-
-site_search_templates_by_domain:
-  techinasia.com: ["https://www.techinasia.com/search?query={query}"]
-  dealstreetasia.com: ["https://www.dealstreetasia.com/?s={query}"]

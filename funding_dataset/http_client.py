@@ -9,6 +9,7 @@ from .settings import USER_AGENT, SourceConfig
 
 
 def fetch(url: str, session: requests.Session) -> str:
+    """Fetch a URL with the configured user agent and one retry for transient failures."""
     last_error: Exception | None = None
     for attempt in range(2):
         try:
@@ -60,6 +61,7 @@ def _get_browser_context():
 
 
 def shutdown_browser() -> None:
+    """Close and clear the shared Playwright browser state if it was opened."""
     if _BROWSER_STATE["browser"] is not None:
         try:
             _BROWSER_STATE["browser"].close()
@@ -74,6 +76,7 @@ def shutdown_browser() -> None:
 
 
 def fetch_with_browser(url: str) -> str:
+    """Fetch rendered HTML for a URL using the shared Playwright browser context."""
     context = _get_browser_context()
     page = context.new_page()
     try:
@@ -90,6 +93,7 @@ def fetch_html(
     session: requests.Session,
     source: SourceConfig | None,
 ) -> str:
+    """Fetch HTML through Playwright only when the source requires rendered content."""
     if source is not None and source.needs_browser:
         return fetch_with_browser(url)
     return fetch(url, session)
@@ -100,6 +104,7 @@ def robot_parser_for(
     session: requests.Session,
     robots_cache: dict[str, RobotFileParser],
 ) -> RobotFileParser:
+    """Return a cached robots.txt parser for a source domain."""
     domain = source.allowed_domains[0]
     if domain in robots_cache:
         return robots_cache[domain]
@@ -124,5 +129,6 @@ def can_fetch_url(
     session: requests.Session,
     robots_cache: dict[str, RobotFileParser],
 ) -> bool:
+    """Return whether robots.txt allows the configured user agent to fetch a URL."""
     parser = robot_parser_for(source, session, robots_cache)
     return parser.can_fetch(USER_AGENT, url)

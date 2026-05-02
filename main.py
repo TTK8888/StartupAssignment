@@ -57,14 +57,27 @@ from funding_dataset.settings import SourceConfig
 from funding_dataset.urls import classify_source, is_allowed_source_type
 
 
+DEFAULT_OUTPUT_DIR = Path("generated_outputs/funding_verification")
+
+
+def output_dir_for_profile(source_profile: str, explicit_output_dir: Path | None) -> Path:
+    """Return the output directory for the selected source profile."""
+    if explicit_output_dir is not None:
+        return explicit_output_dir
+    if source_profile == "default":
+        return DEFAULT_OUTPUT_DIR
+    return Path(f"{DEFAULT_OUTPUT_DIR}_{source_profile}")
+
+
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments and resolve the effective output directory."""
     parser = argparse.ArgumentParser(
         description="Build instruction-aligned startup funding outputs from public sources."
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("generated_outputs/funding_verification"),
+        default=None,
         help="Directory for generated CSV and JSON outputs.",
     )
     parser.add_argument(
@@ -113,7 +126,9 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Keep records whose published date could not be parsed (default: drop them when a date filter is set).",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    args.output_dir = output_dir_for_profile(args.source_profile, args.output_dir)
+    return args
 
 
 def _resolve_sources(args: argparse.Namespace) -> list[SourceConfig]:
@@ -135,6 +150,7 @@ def _resolve_sources(args: argparse.Namespace) -> list[SourceConfig]:
 
 
 def main() -> None:
+    """Run the full funding dataset crawl, extraction, bundling, merge, and write flow."""
     args = parse_args()
     captured_at = datetime.now(timezone.utc).isoformat()
     session = requests.Session()

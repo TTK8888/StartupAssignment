@@ -23,6 +23,7 @@ from ..urls import canonical_source_url
 
 
 def dataset_rows(bundles: list[RecordBundle]) -> list[list[str]]:
+    """Build final dataset CSV rows from verified record bundles."""
     rows: list[list[str]] = []
     for bundle in bundles:
         unique_sources: list[Evidence] = []
@@ -130,6 +131,7 @@ def dataset_rows(bundles: list[RecordBundle]) -> list[list[str]]:
 
 
 def source_documentation_rows(bundles: list[RecordBundle]) -> list[list[str]]:
+    """Build source documentation rows that explain verification status per bundle."""
     rows: list[list[str]] = []
     for bundle in bundles:
         primary = bundle.sources[0]
@@ -181,6 +183,7 @@ def source_documentation_rows(bundles: list[RecordBundle]) -> list[list[str]]:
 
 
 def comparison_rows(bundles: list[RecordBundle]) -> list[list[str]]:
+    """Build cross-source comparison rows for differing amount, round, or lead fields."""
     rows: list[list[str]] = []
     fields = [
         ("Total Investment Amount", "amount", "Amount discrepancy"),
@@ -214,6 +217,7 @@ def comparison_rows(bundles: list[RecordBundle]) -> list[list[str]]:
 
 
 def lead_rows(evidence_items: list[Evidence], captured_at: str) -> list[list[str]]:
+    """Build funding lead rows that preserve extraction status and review notes."""
     rows: list[list[str]] = []
     for evidence in evidence_items:
         status = "Needs review" if evidence.notes else "Extracted"
@@ -237,10 +241,12 @@ def lead_rows(evidence_items: list[Evidence], captured_at: str) -> list[list[str
 
 
 def crawl_log_rows(log_entries) -> list[list[str]]:
+    """Build crawl log CSV rows from crawl log entries."""
     return [[entry.url, entry.source, entry.action, entry.reason] for entry in log_entries]
 
 
 def write_csv(path: Path, header: list[str], rows: list[list[str]]) -> None:
+    """Write a CSV file with a header and rows, creating parent directories."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
@@ -260,6 +266,7 @@ def append_csv(path: Path, header: list[str], rows: list[list[str]]) -> None:
 
 
 def write_articles_json(path: Path, articles: list[ArticleRecord]) -> None:
+    """Write article records to an indented UTF-8 JSON file."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = [
         {

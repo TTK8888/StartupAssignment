@@ -100,6 +100,7 @@ def _lead_investor_uncertain(evidence: Evidence) -> bool:
 
 
 def assess_evidence(evidence: Evidence, body_text: str = "") -> list[str]:
+    """Return field names whose extracted values should be manually reviewed."""
     flagged: list[str] = []
     if _startup_uncertain(evidence, body_text):
         flagged.append("startup")

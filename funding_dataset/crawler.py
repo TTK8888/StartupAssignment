@@ -41,6 +41,7 @@ from .scraper.classification import (
 
 
 def extract_feed_leads(feed_url: str, xml_text: str, source: SourceConfig | None = None) -> list[Lead]:
+    """Extract strict funding leads from RSS or Atom feed XML."""
     soup = BeautifulSoup(xml_text, "xml")
     leads: list[Lead] = []
     for item in soup.find_all(["item", "entry"]):
@@ -72,6 +73,7 @@ def extract_feed_leads(feed_url: str, xml_text: str, source: SourceConfig | None
 
 
 def extract_index_leads(index_url: str, html_text: str, source: SourceConfig | None = None) -> list[Lead]:
+    """Extract strict funding leads from links on an index page."""
     soup = BeautifulSoup(html_text, "html.parser")
     leads: list[Lead] = []
     for link in soup.find_all("a", href=True):
@@ -95,6 +97,7 @@ def extract_index_leads(index_url: str, html_text: str, source: SourceConfig | N
 
 
 def source_from_seed(url: str, source_type: str) -> SourceConfig:
+    """Create a single-seed source config after validating its source type."""
     domain = domain_for(url)
     if source_type == DISALLOWED_SOURCE_TYPE or not is_allowed_source_type(source_type):
         raise ValueError(f"Domain is not in allowed source policy: {domain}")
@@ -108,6 +111,7 @@ def source_from_seed(url: str, source_type: str) -> SourceConfig:
 
 
 def configured_sources(args: argparse.Namespace) -> list[SourceConfig]:
+    """Combine configured sources with allowed extra feed and index URL seeds."""
     sources = list(SOURCE_CONFIGS)
     for feed_url in args.feed:
         source_type = classify_source(feed_url)
@@ -131,6 +135,7 @@ def crawl_source(
     robots_cache: dict[str, RobotFileParser],
     last_request_at: dict[str, float],
 ) -> CrawlResult:
+    """Crawl one source within depth, domain, robots, and request-delay limits."""
     # bounded crawl across allowed domains depth page count and link count
     leads: list[Lead] = []
     articles = []
@@ -232,6 +237,7 @@ def collect_leads(
     args: argparse.Namespace,
     session: requests.Session,
 ) -> CrawlResult:
+    """Crawl all sources and append manually provided URLs as leads."""
     all_leads: list[Lead] = []
     all_articles = []
     all_log_entries: list[CrawlLogEntry] = []

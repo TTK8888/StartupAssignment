@@ -30,6 +30,7 @@ def _amount_candidate_score(text: str, match: re.Match[str]) -> tuple[int, int, 
 
 
 def amount_from_text(text: str) -> str:
+    """Extract the highest-confidence funding amount from text."""
     if re.search(r"\bundisclosed\b", text, re.IGNORECASE):
         return "Undisclosed"
     matches = list(AMOUNT_PATTERN.finditer(text))
@@ -40,6 +41,7 @@ def amount_from_text(text: str) -> str:
 
 
 def usd_to_bdt_rate_for_year(year: int | None) -> Decimal:
+    """Return the configured USD-to-BDT exchange rate closest to a year."""
     if year in USD_TO_BDT_BY_YEAR:
         return USD_TO_BDT_BY_YEAR[year]
     if year is None:
@@ -116,6 +118,7 @@ def _format_normalized_amount(value: Decimal, currency: str) -> str:
 
 
 def normalized_amount_values(amount: str, published: str) -> tuple[str, str]:
+    """Convert a raw amount into normalized USD and BDT display values."""
     if not amount or amount == "Undisclosed":
         return "", ""
     currency = _amount_currency(amount)

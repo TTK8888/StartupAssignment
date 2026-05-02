@@ -46,6 +46,7 @@ def _load_yaml(name: str) -> dict:
 
 
 def source_profile_from_argv(argv: list[str] | None = None) -> str:
+    """Read the source profile name from CLI arguments, defaulting when absent."""
     args = sys.argv if argv is None else argv
     for index, value in enumerate(args):
         if value == SOURCE_PROFILE_ARG and index + 1 < len(args):
@@ -56,6 +57,7 @@ def source_profile_from_argv(argv: list[str] | None = None) -> str:
 
 
 def sources_config_name(profile: str) -> str:
+    """Return the YAML filename for a validated source profile name."""
     clean_profile = profile.strip() if profile else DEFAULT_SOURCE_PROFILE
     if clean_profile == DEFAULT_SOURCE_PROFILE:
         return "sources.yaml"
@@ -64,6 +66,71 @@ def sources_config_name(profile: str) -> str:
             "Source profile names may only contain letters, numbers, underscores, and hyphens."
         )
     return f"sources.{clean_profile}.yaml"
+
+
+def _matches_included_domain(domain: str, include_domains: set[str]) -> bool:
+    return any(domain == included or domain.endswith(f".{included}") for included in include_domains)
+
+
+def _source_matches_included_domain(source: dict, include_domains: set[str]) -> bool:
+    return any(
+        _matches_included_domain(domain, include_domains)
+        for domain in source.get("allowed_domains", [])
+    )
+
+
+def _filter_domain_list(domains: list[str], include_domains: set[str]) -> list[str]:
+    return [domain for domain in domains if _matches_included_domain(domain, include_domains)]
+
+
+def apply_source_profile(base_config: dict, profile_config: dict) -> dict:
+    """Filter and merge the base source config according to a profile config."""
+    include_domains = set(profile_config.get("include_domains", []))
+    if not include_domains:
+        raise ValueError("Source profile must define at least one include_domains entry.")
+
+    merged = dict(base_config)
+    merged["source_configs"] = [
+        source
+        for source in base_config["source_configs"]
+        if _source_matches_included_domain(source, include_domains)
+    ]
+    merged["allowed_trusted_media_domains"] = _filter_domain_list(
+        base_config["allowed_trusted_media_domains"], include_domains
+    )
+    merged["allowed_startup_database_domains"] = _filter_domain_list(
+        base_config["allowed_startup_database_domains"], include_domains
+    )
+    merged["paywalled_headline_only_domains"] = _filter_domain_list(
+        base_config["paywalled_headline_only_domains"], include_domains
+    )
+    merged["source_type_by_domain"] = {
+        domain: source_type
+        for domain, source_type in base_config["source_type_by_domain"].items()
+        if _matches_included_domain(domain, include_domains)
+    }
+    merged["site_search_templates_by_domain"] = {
+        domain: templates
+        for domain, templates in base_config["site_search_templates_by_domain"].items()
+        if _matches_included_domain(domain, include_domains)
+    }
+    if "followable_outbound_extra" in profile_config:
+        merged["followable_outbound_extra"] = list(profile_config["followable_outbound_extra"])
+    else:
+        merged["followable_outbound_extra"] = _filter_domain_list(
+            base_config["followable_outbound_extra"], include_domains
+        )
+    return merged
+
+
+def load_sources_config(profile: str) -> dict:
+    """Load the source config for a profile, applying a base config when configured."""
+    sources = _load_yaml(sources_config_name(profile))
+    base_config_name = sources.get("base_config")
+    if not base_config_name:
+        return sources
+    base_sources = _load_yaml(base_config_name)
+    return apply_source_profile(base_sources, sources)
 
 
 @dataclass(frozen=True)
@@ -120,7 +187,7 @@ NON_USD_TO_USD_RATE: dict[str, Decimal] = {
 
 # ---- sources*.yaml ----
 SOURCE_PROFILE = source_profile_from_argv()
-_sources = _load_yaml(sources_config_name(SOURCE_PROFILE))
+_sources = load_sources_config(SOURCE_PROFILE)
 DISALLOWED_SOURCE_TYPE: str = _sources["disallowed_source_type"]
 ALLOWED_TRUSTED_MEDIA_DOMAINS: set[str] = set(_sources["allowed_trusted_media_domains"])
 ALLOWED_STARTUP_DATABASE_DOMAINS: set[str] = set(_sources["allowed_startup_database_domains"])

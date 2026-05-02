@@ -18,18 +18,22 @@ from .entities import (
 
 
 def has_deal_action(*values: str) -> bool:
+    """Return whether text contains a funding-deal action phrase."""
     return bool(DEAL_ACTION_PATTERN.search(" ".join(values)))
 
 
 def has_round_or_amount(*values: str) -> bool:
+    """Return whether text contains an investment round or amount signal."""
     return bool(ROUND_OR_AMOUNT_PATTERN.search(" ".join(values)))
 
 
 def has_negative_topic(*values: str) -> bool:
+    """Return whether text matches a topic that should be excluded."""
     return bool(NEGATIVE_TOPIC_PATTERN.search(" ".join(values)))
 
 
 def strict_startup_candidate(title: str, url: str, source: SourceConfig | None) -> str:
+    """Extract a startup candidate used by strict funding checks."""
     startup = startup_from_title(title)
     if startup:
         return startup
@@ -44,6 +48,7 @@ def passes_strict_funding_checks(
     source: SourceConfig | None,
     content: str = "",
 ) -> bool:
+    """Return whether title, URL, and optional content pass strict funding rules."""
     if not title or not url:
         return False
     window = content[:6000]
@@ -68,6 +73,7 @@ def passes_strict_funding_checks(
 
 
 def is_strict_funding_headline(title: str, url: str, source: SourceConfig | None) -> bool:
+    """Return whether a headline passes strict funding rules without page content."""
     return passes_strict_funding_checks(title, url, source)
 
 
@@ -77,8 +83,10 @@ def is_strict_funding_announcement(
     content: str,
     source: SourceConfig | None,
 ) -> bool:
+    """Return whether a full article passes strict funding announcement rules."""
     return passes_strict_funding_checks(title, url, source, content)
 
 
 def is_funding_like(title: str, url: str) -> bool:
+    """Return whether title and URL have broad funding signals and no negative topic."""
     return bool(FUNDING_PATTERN.search(f"{title} {url}")) and not has_negative_topic(title, url)

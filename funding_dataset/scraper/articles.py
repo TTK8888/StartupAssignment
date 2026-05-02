@@ -29,6 +29,7 @@ from .classification import is_strict_funding_announcement
 
 
 def page_fields_from_html(html_text: str) -> tuple[str, str, str]:
+    """Extract title, published date, and readable body text from an HTML page."""
     soup = BeautifulSoup(html_text, "html.parser")
 
     title = ""
@@ -73,11 +74,13 @@ def page_fields_from_html(html_text: str) -> tuple[str, str, str]:
 
 
 def text_from_html(html_text: str) -> str:
+    """Extract readable body text from an HTML page."""
     _, _, text = page_fields_from_html(html_text)
     return text
 
 
 def outbound_links_from_html(html_text: str, base_url: str, max_links: int = 3) -> list[str]:
+    """Return trusted external article links found in page content."""
     # follows only known funding outlets linked from another article
     if not html_text:
         return []
@@ -112,6 +115,7 @@ def outbound_links_from_html(html_text: str, base_url: str, max_links: int = 3) 
 
 
 def title_from_url_slug(url: str) -> str:
+    """Build a readable title fallback from the last segment of a URL."""
     # converts url slugs into readable headlines when html has no article title
     path = urlparse(url).path.strip("/")
     if not path:
@@ -148,6 +152,7 @@ def _looks_generic_banner(title: str) -> bool:
 
 
 def best_article_title(html_title: str, lead_title: str) -> str:
+    """Choose the stronger article title from feed and HTML candidates."""
     # prefers feed titles when rendered pages expose only a generic banner
     candidates = [t for t in (lead_title, html_title) if t]
     if not candidates:
@@ -167,16 +172,19 @@ def best_article_title(html_title: str, lead_title: str) -> str:
 
 
 def title_from_html(html_text: str) -> str:
+    """Extract the best available title from HTML."""
     title, _, _ = page_fields_from_html(html_text)
     return title
 
 
 def published_from_html(html_text: str) -> str:
+    """Extract the best available published date string from HTML."""
     _, published, _ = page_fields_from_html(html_text)
     return published
 
 
 def parse_published_date(value: str) -> date | None:
+    """Parse a published date string into a date when possible."""
     # year only dates become january one so year filters can compare them
     if not value:
         return None
@@ -217,6 +225,7 @@ def parse_published_date(value: str) -> date | None:
 
 
 def parse_date_arg(value: str, *, end_of_period: bool = False) -> date:
+    """Parse a CLI date argument in YYYY, YYYY-MM, or YYYY-MM-DD format."""
     # expands partial to dates to the end of the period
     parts = value.strip().split("-")
     try:
@@ -239,10 +248,12 @@ def parse_date_arg(value: str, *, end_of_period: bool = False) -> date:
 
 
 def date_filter_active(args: argparse.Namespace) -> bool:
+    """Return whether any CLI date filter option is enabled."""
     return bool(args.year) or bool(args.from_date) or bool(args.to_date)
 
 
 def make_date_filter(args: argparse.Namespace):
+    """Build a predicate that keeps published dates within the requested CLI range."""
     years = set(args.year or [])
     from_date = parse_date_arg(args.from_date) if args.from_date else None
     to_date = parse_date_arg(args.to_date, end_of_period=True) if args.to_date else None
@@ -266,6 +277,7 @@ def make_date_filter(args: argparse.Namespace):
 
 
 def month_year(value: str) -> str:
+    """Format a date-like string as month and year, or return Not Available."""
     if not value:
         return "Not Available"
     parsers = [
@@ -290,6 +302,7 @@ def month_year(value: str) -> str:
 
 
 def is_valid_article(url: str, title: str, content: str, source: SourceConfig) -> bool:
+    """Return whether a crawled page satisfies strict funding article rules."""
     # scans the article lead because funding terms usually appear early
     if not looks_like_article_url(url):
         return False
@@ -312,6 +325,7 @@ def article_record_from_page(
     fallback_title: str = "",
     fallback_date: str = "",
 ) -> ArticleRecord:
+    """Create an article record from HTML with optional title and date fallbacks."""
     title, published, content = page_fields_from_html(html_text)
     title = title or fallback_title
     published = published or fallback_date

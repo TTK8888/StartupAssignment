@@ -62,6 +62,7 @@ _MISSING_VALUE_SENTINELS = {"", "Unknown", "Not Available", "Not Stated"}
 
 
 def lead_key(evidence: Evidence) -> str:
+    """Build a stable grouping key for evidence that appears to describe the same deal."""
     # groups the same deal across sources and avoids merging unknown startups
     if evidence.parent_lead_key:
         return evidence.parent_lead_key
@@ -73,6 +74,7 @@ def lead_key(evidence: Evidence) -> str:
 
 
 def dedupe_leads(leads: Iterable[Lead]) -> list[Lead]:
+    """Return leads in input order with duplicate URLs removed."""
     seen: set[str] = set()
     unique: list[Lead] = []
     for lead in leads:
@@ -89,6 +91,7 @@ def evidence_from_lead(
     sources: list[SourceConfig],
     parent_lead_key: str = "",
 ) -> tuple[Evidence, ArticleRecord, list[str]] | None:
+    """Fetch and extract structured funding evidence from a crawl lead."""
     source = source_for_url(lead.url, sources)
     source_type = classify_source(lead.url)
     if not is_allowed_source_type(source_type):
@@ -216,6 +219,7 @@ def follow_outbound_links(
     sources: list[SourceConfig],
     request_delay: float,
 ) -> tuple[list[Evidence], list[ArticleRecord]]:
+    """Extract evidence from trusted outbound citation links attached to parent articles."""
     # child links inherit the parent key so citations stay in the same bundle
     new_evidence: list[Evidence] = []
     new_articles: list[ArticleRecord] = []
@@ -257,6 +261,7 @@ def follow_outbound_links(
 
 
 def build_bundles(evidence_items: Iterable[Evidence]) -> list[RecordBundle]:
+    """Group related evidence into prioritized record bundles for dataset output."""
     # bundles multi source coverage and ranks the best source first
     groups: dict[str, list[Evidence]] = {}
     for evidence in evidence_items:
@@ -287,6 +292,7 @@ def build_bundles(evidence_items: Iterable[Evidence]) -> list[RecordBundle]:
 
 
 def bundle_issues(sources: list[Evidence]) -> list[str]:
+    """Return review issues that affect whether a bundle can enter the final dataset."""
     # issue text here keeps bundles out of the final dataset
     issues: list[str] = []
     primary = sources[0]
@@ -304,6 +310,7 @@ def bundle_issues(sources: list[Evidence]) -> list[str]:
 
 
 def choose_value(sources: list[Evidence], attr: str, fallback: str) -> str:
+    """Choose the first non-placeholder attribute value from sources in priority order."""
     # first non placeholder value wins in source priority order
     for source in sources:
         value = getattr(source, attr)
@@ -316,6 +323,7 @@ def prune_irrelevant_leads(
     evidence_items: list[Evidence],
     sources: list[SourceConfig],
 ) -> list[Evidence]:
+    """Filter extracted evidence down to records that satisfy the funding relevance rules."""
     pruned: list[Evidence] = []
     for evidence in evidence_items:
         if not is_allowed_source_type(evidence.source_type):
@@ -345,6 +353,7 @@ def prune_irrelevant_leads(
 
 
 def is_complete_trusted_media_source(source: Evidence, startup: str) -> bool:
+    """Return whether a trusted media item has enough detail to stand alone."""
     title = source.title or ""
     return (
         source.source_type == "Trusted media"

@@ -63,7 +63,7 @@ Written under `--output-dir` (default `generated_outputs/funding_verification`):
 
 ### Run from scratch
 
-From a fresh checkout, run these commands from the project root.
+From a fresh checkout, run these commands from the project root:
 
 ```bash
 python3 -m venv .venv
@@ -73,31 +73,88 @@ python -m playwright install chromium
 python main.py
 ```
 
-`python main.py` uses the configured sources in `config/sources.yaml` and writes outputs to `generated_outputs/funding_verification`.
+`python main.py` loads `config/sources.yaml` and writes files to `generated_outputs/funding_verification`.
 
-To use a smaller source profile, pass `--source-profile small`. This loads `config/sources.small.yaml` instead of `config/sources.yaml`:
-
-```bash
-python main.py --source-profile small
-```
-
-If you prefer the legacy command, this still calls the same entry point:
-
-```bash
-python build_verified_funding_dataset.py
-```
-
-To rebuild a clean output folder, remove the generated files first or pass a new output directory:
+If you want a clean run without overwriting the default output folder, pass a new output directory:
 
 ```bash
 python main.py --output-dir generated_outputs/funding_verification_fresh
 ```
 
-### Optional flags
+The legacy command still calls the same entry point:
 
-All flags are optional. Use them when you want to add sources, limit dates, or change crawl bounds.
-
+```bash
+python build_verified_funding_dataset.py
 ```
+
+### Run with the small source profile
+
+Use `--source-profile small` to load `config/sources.small.yaml`. The small profile filters the main source config down to the domains listed in `include_domains`.
+
+```bash
+python main.py --source-profile small
+```
+
+This writes files to `generated_outputs/funding_verification_small` by default.
+
+To run the small profile into a separate folder:
+
+```bash
+python main.py \
+  --source-profile small \
+  --output-dir generated_outputs/funding_verification_small_fresh
+```
+
+### Run one specific URL
+
+Use `--url` when you want to verify one article, press release, or announcement URL.
+
+```bash
+python main.py --url https://example.com/article
+```
+
+You can combine it with the small profile:
+
+```bash
+python main.py \
+  --source-profile small \
+  --url https://example.com/article
+```
+
+`--url` is additive. The configured sources still run unless you also change the source set with another flag. To keep the output easy to review for a one-off URL, pass a fresh `--output-dir`.
+
+### Add or remove sources
+
+The default run reads source definitions from `config/sources.yaml`.
+
+To add a new crawl source to the full run:
+
+1. Add its domain to the right allowlist, such as `allowed_trusted_media_domains`, `allowed_startup_database_domains`, or `source_type_by_domain`.
+2. Add an entry under `source_configs` with `name`, `source_type`, `allowed_domains`, `seed_urls`, and `url_patterns`.
+3. Add site search templates under `site_search_templates_by_domain` if the site has useful search URLs.
+4. Set `needs_browser: true` only when regular HTTP fetches do not return usable article HTML.
+
+To remove a source from the full run, remove its `source_configs` entry. Also remove its domain from the allowlists and search templates if no other source uses it.
+
+To add or remove a source only for the small profile, edit `config/sources.small.yaml`:
+
+```yaml
+base_config: sources.yaml
+
+include_domains:
+  - techinasia.com
+  - dealstreetasia.com
+
+followable_outbound_extra: []
+```
+
+Add a domain to `include_domains` to include it in `python main.py --source-profile small`. Remove a domain from `include_domains` to skip it. Domains in the small profile must already exist in `config/sources.yaml`; the small file does not define new sources by itself.
+
+### Common flags
+
+Use these flags to add crawl inputs, limit dates, or adjust crawl size:
+
+```bash
 python main.py \
   --source-profile small \
   --feed https://example.com/rss \
@@ -108,11 +165,15 @@ python main.py \
   --max-pages 25 --max-depth 1 --request-delay 1.0
 ```
 
-`--index-url` is exclusive: when at least one is supplied, the configured sources in `config/sources.yaml` are skipped and only the supplied URLs become crawl seeds. `--feed` and `--url` remain additive.
+`--feed` adds an RSS or Atom feed to the configured sources.
 
-`--source-profile` selects a named source file before the crawl starts. The default profile loads `config/sources.yaml`; `--source-profile small` loads `config/sources.small.yaml`.
+`--index-url` is exclusive. When supplied, configured sources are skipped and only the supplied index URLs become crawl seeds.
 
-Quotas: `--min-bangladesh` and `--min-sea` set the required record counts. Date filters drop undated records unless `--include-undated` is set.
+`--url` adds a specific URL as a lead.
+
+`--source-profile` selects a named source file before the crawl starts. `default` loads `config/sources.yaml`; `small` loads `config/sources.small.yaml`. Passing `--output-dir` overrides the profile output directory.
+
+`--min-bangladesh` and `--min-sea` set the required record counts. Date filters drop undated records unless `--include-undated` is set.
 
 ## Dependencies
 

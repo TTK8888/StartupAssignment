@@ -7,6 +7,7 @@ from ..settings import COUNTRY_TERMS, FUNDING_PATTERN, ROUND_PATTERNS
 
 
 def country_from_text(*values: str) -> str:
+    """Infer the target country or region from one or more text values."""
     for value in values:
         blob = value.lower()
         for country, terms in COUNTRY_TERMS.items():
@@ -18,6 +19,7 @@ def country_from_text(*values: str) -> str:
 
 
 def round_from_text(text: str) -> str:
+    """Infer the investment round label from article text."""
     for pattern, label in ROUND_PATTERNS:
         if pattern.search(text):
             return label
@@ -29,6 +31,7 @@ def round_from_text(text: str) -> str:
 
 
 def lead_investor_from_text(text: str) -> str:
+    """Extract the lead investor from common led-by funding phrases."""
     patterns = [
         r"\bco-led by\s+([^.;:]{2,120}?)(?:,?\s+(?:with|alongside|and participation|participating|joins portfolio|portfolio news|written by|share|read more)|[.;])",
         r"\bled by\s+([^.;:]{2,120}?)(?:,?\s+(?:with|alongside|and participation|participating|joins portfolio|portfolio news|written by|share|read more)|[.;])",
@@ -43,6 +46,7 @@ def lead_investor_from_text(text: str) -> str:
 
 
 def investors_from_text(text: str, lead_investor: str) -> str:
+    """Extract investor names from funding text, preferring a known lead investor."""
     # reuses a clear lead investor before trying looser investor patterns
     if lead_investor != "Not Stated":
         return lead_investor
@@ -78,6 +82,7 @@ def _looks_like_prose(value: str) -> bool:
 
 
 def clean_entity_list(value: str) -> str:
+    """Normalize captured entity text into a semicolon-separated name list."""
     value = re.split(
         r"\b(?:joins portfolio|portfolio news|written by|share|read more)\b",
         value,
@@ -92,6 +97,7 @@ def clean_entity_list(value: str) -> str:
 
 
 def investor_type_from_names(investor_names: str) -> str:
+    """Classify investor names into a coarse investor type label."""
     if investor_names in {"", "Not Available"}:
         return "Not Available"
     lowered = investor_names.lower()
@@ -197,6 +203,7 @@ _BODY_SUBJECT_PATTERN = re.compile(
 
 
 def startup_from_body(body: str) -> str:
+    """Infer the startup name from repeated deal-subject phrases in article body text."""
     if not body:
         return ""
     counts: dict[str, int] = {}
@@ -213,6 +220,7 @@ def startup_from_body(body: str) -> str:
 
 
 def startup_from_investor_slug(url: str) -> str:
+    """Infer a startup name from deal wording in an investor or company URL slug."""
     # finds the proper noun near the deal verb in the last url segment
     segments = [s for s in urlparse(url).path.rstrip("/").split("/") if s]
     if not segments:
@@ -308,6 +316,7 @@ def _select_title_segment(title: str) -> str:
 
 
 def startup_from_title(title: str) -> str:
+    """Infer a startup name from funding-deal wording in an article title."""
     title = re.sub(r"^In\s+\d+\s+Words:\s+", "", title, flags=re.IGNORECASE)
     cleaned = _select_title_segment(title)
     subject_patterns = [
@@ -350,6 +359,7 @@ _TRAILING_FRAGMENT_PATTERN = re.compile(
 
 
 def clean_startup_name(value: str) -> str:
+    """Remove geography, prose fragments, and generic words from a startup name."""
     value = value.strip()
     value = re.sub(
         r"^(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"

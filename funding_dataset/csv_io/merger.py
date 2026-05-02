@@ -156,7 +156,7 @@ def merge(
     detected_at: str | None = None,
 ) -> tuple[list[list[str]], list[list[str]]]:
     """
-    Returns (merged_dataset_rows, conflict_rows).
+    Merge new bundles into an existing dataset and return dataset and conflict rows.
 
     merged_dataset_rows is the full set to write to dataset.csv (existing rows
     in original order followed by appended new rows that didn't match).
